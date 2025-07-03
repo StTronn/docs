@@ -1,0 +1,136 @@
+---
+title: "Create API Key"
+description: "Generate a new API key with custom permissions and settings"
+---
+
+## POST /keys/create
+
+Create a new API key for accessing the Nolano API. This endpoint requires Clerk JWT authentication.
+
+### Base URL
+
+```
+https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/create
+```
+
+### Authentication
+
+This endpoint requires Clerk JWT authentication. Include your JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer your_jwt_token_here
+```
+
+### Request Body
+
+<ParamField body="name" type="string" required>
+  A descriptive name for the API key (e.g., "Production App", "Test Environment")
+</ParamField>
+
+<ParamField body="permissions" type="array" default={["read"]}>
+  Array of permissions: "read", "write", "admin", "delete"
+</ParamField>
+
+<ParamField body="expires_at" type="string" optional>
+  ISO 8601 expiration date (e.g., "2024-12-31T23:59:59Z"). If not provided, key never expires.
+</ParamField>
+
+<ParamField body="description" type="string" optional>
+  Optional description for the API key
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/create \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production API Key",
+    "permissions": ["read", "write"],
+    "expires_at": "2024-12-31T23:59:59Z",
+    "description": "API key for production forecasting service"
+  }'
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the API key was created successfully
+</ResponseField>
+
+<ResponseField name="api_key" type="string">
+  The generated API key (only returned once)
+</ResponseField>
+
+<ResponseField name="key_id" type="string">
+  Unique identifier for the API key
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name assigned to the API key
+</ResponseField>
+
+<ResponseField name="permissions" type="array">
+  Array of permissions granted to the key
+</ResponseField>
+
+<ResponseField name="expires_at" type="string">
+  Expiration date of the key (if set)
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp when the key was created
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "api_key": "ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6",
+  "key_id": "1751308234318",
+  "name": "Production API Key",
+  "permissions": ["read", "write"],
+  "expires_at": "2024-12-31T23:59:59Z",
+  "created_at": "2024-01-20T10:30:00Z",
+  "description": "API key for production forecasting service"
+}
+```
+
+### Error Responses
+
+<ResponseField name="400" type="Bad Request">
+  Invalid request parameters or malformed data
+</ResponseField>
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or missing JWT token
+</ResponseField>
+
+<ResponseField name="403" type="Forbidden">
+  Insufficient permissions to create API keys
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many API key creation requests
+</ResponseField>
+
+### Important Notes
+
+<Warning>
+  **Store the API key securely**: The full API key is only displayed once during creation. Make sure to save it in a secure location.
+</Warning>
+
+<Note>
+  **Permissions**: 
+  - `read`: Can access forecast endpoints
+  - `write`: Can create and modify forecasts
+  - `admin`: Can manage API keys for the account
+  - `delete`: Can delete data and forecasts
+</Note>
+
+### Rate Limits
+
+- Maximum 10 API keys per user account
+- Maximum 5 API key creation requests per hour per user 

@@ -1,0 +1,208 @@
+---
+title: "Authentication"
+description: "Learn how to authenticate with the Nolano API using API keys"
+---
+
+## Overview
+
+The Nolano API uses API key authentication to secure access to all endpoints. This ensures that only authorized users can access your forecasting data and manage API resources.
+
+## Authentication Methods
+
+### API Key Authentication
+
+All forecast endpoints use API key authentication. Include your API key in the `Authorization` header:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+  -H "Authorization: ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6" \
+  -H "Content-Type: application/json"
+```
+
+### JWT Authentication (Management Endpoints)
+
+API key management endpoints require Clerk JWT authentication:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/create \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+```
+
+## API Key Format
+
+Nolano API keys follow a specific format for easy identification:
+
+```
+ak_[64_character_hex_string]
+```
+
+**Example:**
+```
+ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6
+```
+
+## Security Features
+
+### Secure Storage
+
+- API keys are hashed using SHA-256 before storage
+- Only the hash is stored in the database
+- The original key is never stored in plain text
+
+### Usage Tracking
+
+Every API call is tracked with detailed metrics:
+
+- **Usage Count**: Total number of requests made
+- **Last Used**: Timestamp of the most recent request
+- **Request Patterns**: Monitoring for unusual activity
+
+### Permission System
+
+API keys support fine-grained permissions:
+
+<CardGroup cols={2}>
+  <Card title="read" icon="eye">
+    Access to forecast endpoints and data retrieval
+  </Card>
+  <Card title="write" icon="pencil">
+    Ability to create and modify forecasts
+  </Card>
+  <Card title="admin" icon="crown">
+    Manage API keys for the account
+  </Card>
+  <Card title="delete" icon="trash">
+    Delete data and forecasts
+  </Card>
+</CardGroup>
+
+## Getting Your API Key
+
+### Contact Support
+
+For new API keys, contact our support team:
+
+📧 **Email**: [support@nolano.com](mailto:support@nolano.com)
+
+Include the following information:
+- Your intended use case
+- Expected request volume
+- Required permissions
+
+### Self-Service (Coming Soon)
+
+We're building a self-service dashboard where you'll be able to:
+- Create and manage API keys
+- Monitor usage statistics
+- Set custom permissions and expiration dates
+
+## Error Handling
+
+### Common Authentication Errors
+
+<AccordionGroup>
+  <Accordion icon="x-mark" title="401 Unauthorized">
+    **Cause**: Invalid, missing, or expired API key
+    
+    **Solution**: 
+    - Verify your API key is correct
+    - Check if the key has expired
+    - Ensure you're using the `Authorization` header
+    
+    ```bash
+    # Correct format
+    -H "Authorization: ak_your_key_here"
+    ```
+  </Accordion>
+  
+  <Accordion icon="x-mark" title="403 Forbidden">
+    **Cause**: API key lacks required permissions
+    
+    **Solution**: 
+    - Check your key's permissions
+    - Contact support to upgrade permissions if needed
+    - Use a different key with appropriate permissions
+  </Accordion>
+  
+  <Accordion icon="x-mark" title="429 Rate Limited">
+    **Cause**: Too many requests in a short time period
+    
+    **Solution**: 
+    - Implement exponential backoff
+    - Reduce request frequency
+    - Consider upgrading to a higher tier plan
+  </Accordion>
+</AccordionGroup>
+
+## Security Best Practices
+
+### Key Management
+
+1. **Store Securely**: Never commit API keys to version control
+2. **Environment Variables**: Use environment variables for key storage
+3. **Rotate Regularly**: Rotate keys periodically for security
+4. **Minimize Permissions**: Only grant necessary permissions
+5. **Monitor Usage**: Regularly review key usage patterns
+
+### Request Security
+
+1. **HTTPS Only**: Always use HTTPS for API requests
+2. **Secure Headers**: Include proper headers in requests
+3. **Rate Limiting**: Implement client-side rate limiting
+4. **Error Handling**: Don't expose keys in error messages
+
+### Example: Secure Storage
+
+```bash
+# .env file
+NOLANO_API_KEY=ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6
+
+# In your application
+api_key = os.environ.get('NOLANO_API_KEY')
+headers = {'Authorization': api_key}
+```
+
+## Rate Limits
+
+Different subscription tiers have different rate limits:
+
+| Tier | Requests/Minute | Requests/Hour | Requests/Day |
+|------|----------------|---------------|--------------|
+| **Free** | 10 | 100 | 1,000 |
+| **Standard** | 100 | 1,000 | 50,000 |
+| **Premium** | 500 | 5,000 | 250,000 |
+| **Enterprise** | Custom | Custom | Custom |
+
+### Rate Limit Headers
+
+API responses include rate limit information:
+
+```bash
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+
+## Testing Authentication
+
+### Quick Test
+
+Test your API key with a simple request:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+  -H "Authorization: ak_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"test": "authentication"}' \
+  -v
+```
+
+### Expected Response
+
+A successful authentication will return either:
+- **200 OK**: Your request was processed
+- **500 Server Error**: Authentication succeeded, but the target API is unreachable
+
+An authentication failure will return:
+- **401 Unauthorized**: Invalid or missing API key 

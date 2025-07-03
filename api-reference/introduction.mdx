@@ -1,33 +1,41 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Reference'
+description: 'Complete reference for the Nolano time series forecasting API'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Welcome to Nolano API
 
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+The Nolano API provides enterprise-grade time series forecasting capabilities with secure authentication and comprehensive API key management. Our API is built on AWS infrastructure ensuring high availability, security, and scalability.
 
 <Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
+  title="Base URL"
+  icon="globe"
+  href="https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com"
 >
-  View the OpenAPI specification file
+  https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com
 </Card>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints use API key authentication. Include your API key in the `Authorization` header of every request.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+  -H "Authorization: your_api_key_here" \
+  -H "Content-Type: application/json"
 ```
+
+### API Key Format
+
+API keys follow this format:
+```
+ak_[64_character_hex_string]
+```
+
+### Security Features
+
+- **Secure Storage**: API keys are hashed using SHA-256 before storage
+- **Usage Tracking**: All API calls are logged with usage statistics
+- **Expiration Support**: Set custom expiration dates for API keys
+- **Permission Control**: Fine-grained permissions (read, write, admin, delete)
+- **Instant Revocation**: Immediately revoke compromised keys

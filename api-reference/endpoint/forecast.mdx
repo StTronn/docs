@@ -1,0 +1,147 @@
+---
+title: "Forecast Endpoint"
+description: "Generate time series forecasts using advanced machine learning models"
+---
+
+## POST /forecast
+
+Generate time series forecasts from your historical data using Nolano's advanced forecasting algorithms.
+
+### Base URL
+
+```
+https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast
+```
+
+### Authentication
+
+Include your API key in the Authorization header:
+
+```bash
+Authorization: ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6
+```
+
+### Request Body
+
+<ParamField body="series" type="array" required>
+  Array of numerical values representing your time series data
+</ParamField>
+
+<ParamField body="forecast_periods" type="integer" default={5}>
+  Number of future periods to forecast (1-50)
+</ParamField>
+
+<ParamField body="confidence_level" type="number" default={0.95}>
+  Confidence level for prediction intervals (0.1-0.99)
+</ParamField>
+
+<ParamField body="model_type" type="string" default="auto">
+  Forecasting model to use: "auto", "arima", "ets", "linear", "prophet"
+</ParamField>
+
+<ParamField body="seasonality" type="string" default="auto">
+  Seasonality detection: "auto", "daily", "weekly", "monthly", "yearly", "none"
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+  -H "Authorization: ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "series": [10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35],
+    "forecast_periods": 5,
+    "confidence_level": 0.95,
+    "model_type": "auto",
+    "seasonality": "auto"
+  }'
+```
+
+### Response
+
+<ResponseField name="forecast" type="array">
+  Array of forecasted values for the requested periods
+</ResponseField>
+
+<ResponseField name="confidence_intervals" type="object">
+  Upper and lower bounds for prediction intervals
+  <Expandable title="properties">
+    <ResponseField name="lower" type="array">
+      Lower bounds of confidence intervals
+    </ResponseField>
+    <ResponseField name="upper" type="array">
+      Upper bounds of confidence intervals
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="model_info" type="object">
+  Information about the selected model and performance metrics
+  <Expandable title="properties">
+    <ResponseField name="model_type" type="string">
+      The model type that was used for forecasting
+    </ResponseField>
+    <ResponseField name="accuracy_metrics" type="object">
+      Model performance metrics
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp of when the forecast was generated
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "forecast": [37, 40, 43, 46, 49],
+  "confidence_intervals": {
+    "lower": [34, 36, 38, 40, 42],
+    "upper": [40, 44, 48, 52, 56]
+  },
+  "model_info": {
+    "model_type": "ARIMA(2,1,1)",
+    "accuracy_metrics": {
+      "mape": 4.2,
+      "rmse": 1.5,
+      "mae": 1.1
+    },
+    "seasonality_detected": "none"
+  },
+  "timestamp": "2024-01-20T10:30:00Z"
+}
+```
+
+### Error Responses
+
+<ResponseField name="400" type="Bad Request">
+  Invalid request parameters or malformed data
+</ResponseField>
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or missing API key
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many requests, please slow down
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error during forecast generation
+</ResponseField>
+
+### Rate Limits
+
+- **Standard**: 100 requests per minute
+- **Premium**: 500 requests per minute
+- **Enterprise**: Custom limits available
+
+### Best Practices
+
+1. **Data Quality**: Ensure your time series data is clean and regularly spaced
+2. **Sample Size**: Provide at least 10-20 data points for reliable forecasts
+3. **Seasonality**: Let the model auto-detect seasonality unless you're certain
+4. **Confidence Levels**: Use 0.95 for most applications, 0.99 for critical decisions
+5. **Model Selection**: Start with "auto" and experiment with specific models if needed 

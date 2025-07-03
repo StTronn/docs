@@ -1,0 +1,155 @@
+---
+title: "Get API Keys"
+description: "List all API keys for your account with usage statistics"
+---
+
+## GET /keys
+
+Retrieve a list of all API keys associated with your account, including usage statistics and metadata.
+
+### Base URL
+
+```
+https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys
+```
+
+### Authentication
+
+This endpoint requires Clerk JWT authentication. Include your JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer your_jwt_token_here
+```
+
+### Query Parameters
+
+<ParamField query="status" type="string" optional>
+  Filter by key status: "active", "revoked", or "expired". Default: "active"
+</ParamField>
+
+<ParamField query="limit" type="integer" optional>
+  Maximum number of keys to return (1-100). Default: 50
+</ParamField>
+
+<ParamField query="offset" type="integer" optional>
+  Number of keys to skip for pagination. Default: 0
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X GET "https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys?status=active&limit=10" \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Response
+
+<ResponseField name="keys" type="array">
+  Array of API key objects
+  <Expandable title="Key Object Properties">
+    <ResponseField name="id" type="string">
+      Unique identifier for the API key
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Name assigned to the API key
+    </ResponseField>
+    <ResponseField name="permissions" type="array">
+      Array of permissions granted to the key
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Current status: "active", "revoked", or "expired"
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp when the key was created
+    </ResponseField>
+    <ResponseField name="expires_at" type="string">
+      Expiration date (if set)
+    </ResponseField>
+    <ResponseField name="last_used" type="string">
+      ISO 8601 timestamp of last usage
+    </ResponseField>
+    <ResponseField name="usage_count" type="integer">
+      Total number of API calls made with this key
+    </ResponseField>
+    <ResponseField name="key_preview" type="string">
+      First 8 characters of the API key for identification
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="total_count" type="integer">
+  Total number of keys matching the filter criteria
+</ResponseField>
+
+<ResponseField name="has_more" type="boolean">
+  Whether there are more keys available for pagination
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "keys": [
+    {
+      "id": "1751308234318",
+      "name": "Production API Key",
+      "permissions": ["read", "write"],
+      "status": "active",
+      "created_at": "2024-01-20T10:30:00Z",
+      "expires_at": "2024-12-31T23:59:59Z",
+      "last_used": "2024-01-22T15:45:30Z",
+      "usage_count": 1847,
+      "key_preview": "ak_577aa2",
+      "description": "API key for production forecasting service"
+    },
+    {
+      "id": "1751308234319",
+      "name": "Test Environment",
+      "permissions": ["read"],
+      "status": "active",
+      "created_at": "2024-01-15T09:15:00Z",
+      "expires_at": null,
+      "last_used": "2024-01-21T11:20:15Z",
+      "usage_count": 523,
+      "key_preview": "ak_abc123",
+      "description": "API key for testing"
+    }
+  ],
+  "total_count": 2,
+  "has_more": false
+}
+```
+
+### Error Responses
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or missing JWT token
+</ResponseField>
+
+<ResponseField name="403" type="Forbidden">
+  Insufficient permissions to view API keys
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many requests
+</ResponseField>
+
+### Usage Statistics
+
+Each API key includes detailed usage statistics:
+
+- **usage_count**: Total number of API calls made
+- **last_used**: Timestamp of the most recent API call
+- **Status tracking**: Automatic status updates based on expiration
+
+### Pagination
+
+Use the `limit` and `offset` parameters to paginate through large numbers of API keys:
+
+```bash
+# Get first 10 keys
+GET /keys?limit=10&offset=0
+
+# Get next 10 keys  
+GET /keys?limit=10&offset=10
+``` 

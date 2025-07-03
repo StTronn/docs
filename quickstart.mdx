@@ -1,97 +1,140 @@
 ---
 title: 'Quickstart'
-description: 'Start building awesome documentation in under 5 minutes'
+description: 'Get started with Nolano time series forecasting API in under 5 minutes'
 ---
 
-## Setup your development
+## Getting Started with Nolano
 
-Learn how to update your docs locally and deploy them to the public.
+Learn how to make your first forecast request and manage API keys.
 
-### Edit and preview
+### Get Your API Key
 
 <AccordionGroup>
-  <Accordion icon="github" title="Clone your docs locally">
-    During the onboarding process, we created a repository on your Github with
-    your docs content. You can find this repository on our
-    [dashboard](https://dashboard.mintlify.com). To clone the repository
-    locally, follow these
-    [instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    in your terminal.
+  <Accordion icon="key" title="Obtain an API Key">
+    To use the Nolano API, you need a valid API key. Contact our support team at
+    [support@nolano.com](mailto:support@nolano.com) to get your API key, or use
+    the API key management endpoints if you already have access.
+    
+    Your API key will look like:
+    ```
+    ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6
+    ```
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Preview changes">
-    Previewing helps you make sure your changes look as intended. We built a
-    command line interface to render these changes locally. 
-    1. Install the
-    [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the
-    documentation changes locally with this command: ``` npm i -g mintlify ```
-    2. Run the following command at the root of your documentation (where
-    `docs.json` is): ``` mintlify dev ```
+  <Accordion icon="shield-check" title="Test Your Authentication">
+    Test your API key with a simple request to ensure it's working correctly:
+    
+    ```bash
+    curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+      -H "Authorization: your_api_key_here" \
+      -H "Content-Type: application/json" \
+      -d '{"test": "authentication"}'
+    ```
+    
     <Note>
-      If you’re currently using the legacy ```mint.json``` configuration file, please update the Mintlify CLI:
-
-
-      ```npm i -g mintlify@latest```
-      And run the new upgrade command in your docs repository:
-
-      ```mintlify upgrade```
-      You should now be using the new ```docs.json``` configuration file. Feel free to delete the ```mint.json``` file from your repository.
+      Make sure to include your API key in the `Authorization` header. The API uses
+      secure authentication to protect your data and ensure reliable access.
     </Note>
   </Accordion>
 </AccordionGroup>
 
-### Deploy your changes
+### Make Your First Forecast
 
 <AccordionGroup>
 
-<Accordion icon="message-bot" title="Install our Github app">
-  Our Github app automatically deploys your changes to your docs site, so you
-  don't need to manage deployments yourself. You can find the link to install on
-  your [dashboard](https://dashboard.mintlify.com). Once the bot has been
-  successfully installed, there should be a check mark next to the commit hash
-  of the repo.
+<Accordion icon="chart-line" title="Send Time Series Data">
+  Once your API key is validated, you can send time series data for forecasting.
+  Here's an example request with sample time series data:
+  
+  ```bash
+  curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+    -H "Authorization: ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "series": [10, 12, 15, 18, 20, 22, 25, 28, 30],
+      "forecast_periods": 5,
+      "confidence_level": 0.95
+    }'
+  ```
 </Accordion>
-<Accordion icon="rocket" title="Push your changes">
-  [Commit and push your changes to
-  Git](https://docs.github.com/en/get-started/using-git/pushing-commits-to-a-remote-repository#about-git-push)
-  for your changes to update in your docs site. If you push and don't see that
-  the Github app successfully deployed your changes, you can also manually
-  update your docs through our [dashboard](https://dashboard.mintlify.com).
+
+<Accordion icon="arrow-down" title="Receive Forecast Results">
+  The API will respond with forecast predictions, confidence intervals, and metadata:
+  
+  ```json
+  {
+    "forecast": [32, 35, 38, 41, 44],
+    "confidence_intervals": {
+      "lower": [29, 31, 33, 35, 37],
+      "upper": [35, 39, 43, 47, 51]
+    },
+    "model_info": {
+      "model_type": "ARIMA",
+      "accuracy_metrics": {
+        "mape": 5.2,
+        "rmse": 1.8
+      }
+    },
+    "timestamp": "2024-01-20T10:30:00Z"
+  }
+  ```
 </Accordion>
 
 </AccordionGroup>
 
-## Update your docs
+## API Key Management
 
-Add content directly in your files with MDX syntax and React components. You can use any of our components, or even build your own.
+Manage your API keys programmatically with full lifecycle controls.
 
 <CardGroup>
 
-<Card title="Add Content With MDX" icon="file" href="/essentials/markdown">
-  Add content to your docs with MDX syntax.
+<Card title="Create API Keys" icon="plus" href="/api-reference/endpoint/create-api-key">
+  Generate new API keys with custom permissions and expiration dates.
 </Card>
 
 <Card
-  title="Add Code Blocks"
-  icon="square-code"
-  href="/essentials/code"
+  title="List API Keys"
+  icon="list"
+  href="/api-reference/endpoint/get-api-keys"
 >
-  Add code directly to your docs with syntax highlighting.
+  View all your active API keys and their usage statistics.
 </Card>
 
 <Card
-  title="Add Images"
-  icon="image"
-  href="/essentials/images"
+  title="Rotate API Keys"
+  icon="rotate"
+  href="/api-reference/endpoint/rotate-api-key"
 >
-  Add images to your docs to make them more engaging.
+  Safely rotate API keys without service interruption.
 </Card>
 
 <Card
-  title="Add Custom Components"
-  icon="puzzle-piece"
-  href="/essentials/reusable-snippets"
+  title="Revoke API Keys"
+  icon="trash"
+  href="/api-reference/endpoint/revoke-api-key"
 >
-  Add templates to your docs to make them more reusable.
+  Immediately revoke compromised or unused API keys.
 </Card>
 
 </CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Explore the Forecast API"
+    icon="chart-line"
+    href="/api-reference/endpoint/forecast"
+  >
+    Learn about all the parameters and options for the forecast endpoint.
+  </Card>
+  
+  <Card
+    title="Authentication Guide"
+    icon="shield-check"
+    href="/essentials/authentication"
+  >
+    Deep dive into API key authentication and security best practices.
+  </Card>
+</CardGroup>
+
+

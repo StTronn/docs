@@ -1,0 +1,165 @@
+---
+title: "Rotate API Key"
+description: "Safely rotate an API key by generating a new key while keeping the old one temporarily active"
+---
+
+## POST /keys/rotate
+
+Generate a new API key to replace an existing one. The old key remains active for a grace period to allow for seamless transitions.
+
+### Base URL
+
+```
+https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/rotate
+```
+
+### Authentication
+
+This endpoint requires Clerk JWT authentication. Include your JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer your_jwt_token_here
+```
+
+### Request Body
+
+<ParamField body="key_id" type="string" required>
+  The unique identifier of the API key to rotate
+</ParamField>
+
+<ParamField body="grace_period_hours" type="integer" default={24}>
+  Hours to keep the old key active (1-168, default: 24)
+</ParamField>
+
+<ParamField body="new_name" type="string" optional>
+  Optional new name for the rotated key. If not provided, keeps the original name with "(Rotated)" suffix.
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/rotate \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key_id": "1751308234318",
+    "grace_period_hours": 48,
+    "new_name": "Production API Key v2"
+  }'
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the API key was rotated successfully
+</ResponseField>
+
+<ResponseField name="new_api_key" type="string">
+  The newly generated API key (only returned once)
+</ResponseField>
+
+<ResponseField name="new_key_id" type="string">
+  Unique identifier for the new API key
+</ResponseField>
+
+<ResponseField name="old_key_id" type="string">
+  Unique identifier of the key being replaced
+</ResponseField>
+
+<ResponseField name="old_key_expires_at" type="string">
+  When the old key will be automatically revoked
+</ResponseField>
+
+<ResponseField name="permissions" type="array">
+  Permissions copied from the original key
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Name of the new API key
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp when the new key was created
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "new_api_key": "ak_f8a2b1c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234",
+  "new_key_id": "1751308234320",
+  "old_key_id": "1751308234318",
+  "old_key_expires_at": "2024-01-24T16:30:00Z",
+  "permissions": ["read", "write"],
+  "name": "Production API Key v2",
+  "created_at": "2024-01-22T16:30:00Z"
+}
+```
+
+### Error Responses
+
+<ResponseField name="400" type="Bad Request">
+  Invalid key_id, key not found, or invalid grace period
+</ResponseField>
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or missing JWT token
+</ResponseField>
+
+<ResponseField name="403" type="Forbidden">
+  Insufficient permissions to rotate API keys
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  API key not found or already revoked
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many rotation requests
+</ResponseField>
+
+### Key Rotation Process
+
+<Steps>
+  <Step title="Generate New Key">
+    A new API key is created with the same permissions as the original
+  </Step>
+  <Step title="Grace Period">
+    Both keys remain active for the specified grace period
+  </Step>
+  <Step title="Update Applications">
+    Update your applications to use the new API key
+  </Step>
+  <Step title="Automatic Cleanup">
+    The old key is automatically revoked after the grace period
+  </Step>
+</Steps>
+
+### Important Notes
+
+<Warning>
+  **Store the new API key securely**: The new API key is only displayed once during rotation. Make sure to save it before updating your applications.
+</Warning>
+
+<Note>
+  **Grace Period**: The old key will be automatically revoked after the grace period expires. Plan your migration accordingly.
+</Note>
+
+<Tip>
+  **Zero Downtime**: Key rotation allows for zero-downtime transitions by keeping both keys active during the migration period.
+</Tip>
+
+### Best Practices
+
+1. **Plan Migration**: Schedule rotation during low-traffic periods when possible
+2. **Monitor Usage**: Track which key is being used to ensure successful migration
+3. **Grace Period**: Use longer grace periods for critical production systems
+4. **Immediate Updates**: Update applications as soon as possible after rotation
+5. **Verify New Key**: Test the new key before relying on it completely
+
+### Rate Limits
+
+- Maximum 5 rotation requests per hour per user
+- Grace period cannot exceed 168 hours (7 days)
+- Maximum 2 concurrent active keys per rotation (old + new) 

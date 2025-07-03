@@ -1,0 +1,127 @@
+---
+title: "Revoke API Key"
+description: "Immediately revoke an API key to prevent further usage"
+---
+
+## POST /keys/revoke
+
+Immediately revoke an API key, preventing any further usage. This action is irreversible.
+
+### Base URL
+
+```
+https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/revoke
+```
+
+### Authentication
+
+This endpoint requires Clerk JWT authentication. Include your JWT token in the Authorization header:
+
+```bash
+Authorization: Bearer your_jwt_token_here
+```
+
+### Request Body
+
+<ParamField body="key_id" type="string" required>
+  The unique identifier of the API key to revoke
+</ParamField>
+
+<ParamField body="reason" type="string" optional>
+  Optional reason for revocation (e.g., "Security breach", "No longer needed")
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/revoke \
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key_id": "1751308234318",
+    "reason": "Security audit - key rotation"
+  }'
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the API key was revoked successfully
+</ResponseField>
+
+<ResponseField name="key_id" type="string">
+  The unique identifier of the revoked API key
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The name of the revoked API key
+</ResponseField>
+
+<ResponseField name="revoked_at" type="string">
+  ISO 8601 timestamp when the key was revoked
+</ResponseField>
+
+<ResponseField name="reason" type="string">
+  The reason provided for revocation (if any)
+</ResponseField>
+
+<ResponseField name="final_usage_count" type="integer">
+  Total number of API calls made with this key before revocation
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "key_id": "1751308234318",
+  "name": "Production API Key",
+  "revoked_at": "2024-01-22T16:30:00Z",
+  "reason": "Security audit - key rotation",
+  "final_usage_count": 1847
+}
+```
+
+### Error Responses
+
+<ResponseField name="400" type="Bad Request">
+  Invalid key_id or key not found
+</ResponseField>
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or missing JWT token
+</ResponseField>
+
+<ResponseField name="403" type="Forbidden">
+  Insufficient permissions to revoke API keys
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  API key not found or already revoked
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many revocation requests
+</ResponseField>
+
+### Important Notes
+
+<Warning>
+  **Irreversible Action**: Once an API key is revoked, it cannot be reactivated. You'll need to create a new API key if access is required again.
+</Warning>
+
+<Note>
+  **Immediate Effect**: Revocation takes effect immediately. Any subsequent requests using the revoked key will receive a 401 Unauthorized response.
+</Note>
+
+### Security Best Practices
+
+1. **Regular Audits**: Periodically review and revoke unused API keys
+2. **Incident Response**: Immediately revoke keys suspected of being compromised
+3. **Rotation**: Revoke old keys when rotating to new ones
+4. **Documentation**: Always provide a reason for audit trails
+
+### Rate Limits
+
+- Maximum 10 revocation requests per hour per user
+- No limit on the number of keys that can be revoked 

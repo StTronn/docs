@@ -1,0 +1,328 @@
+---
+title: "API Keys"
+description: "Complete guide to managing API keys for the Nolano forecasting API"
+---
+
+## What are API Keys?
+
+API keys are unique identifiers that authenticate your requests to the Nolano API. They act as both an identifier and a password, ensuring that only authorized users can access forecasting services and manage API resources.
+
+## Key Features
+
+### Secure by Design
+
+<CardGroup cols={2}>
+  <Card title="SHA-256 Hashing" icon="shield-check">
+    Keys are hashed before storage - original keys are never stored in plain text
+  </Card>
+  <Card title="Usage Tracking" icon="chart-bar">
+    Every API call is logged with detailed usage statistics and monitoring
+  </Card>
+  <Card title="Expiration Control" icon="clock">
+    Set custom expiration dates or create keys that never expire
+  </Card>
+  <Card title="Instant Revocation" icon="x-mark">
+    Immediately revoke compromised keys with audit trails
+  </Card>
+</CardGroup>
+
+## API Key Lifecycle
+
+### Creation
+
+API keys are created through the management endpoints with custom configurations:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/create \
+  -H "Authorization: Bearer your_jwt_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production Forecasting",
+    "permissions": ["read", "write"],
+    "expires_at": "2024-12-31T23:59:59Z"
+  }'
+```
+
+### Active Usage
+
+Once created, use your API key for all forecast requests:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/forecast \
+  -H "Authorization: ak_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"series": [1,2,3,4,5], "forecast_periods": 3}'
+```
+
+### Rotation
+
+Safely rotate keys without service interruption:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/rotate \
+  -H "Authorization: Bearer your_jwt_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key_id": "1751308234318",
+    "grace_period_hours": 48
+  }'
+```
+
+### Revocation
+
+Immediately revoke keys when needed:
+
+```bash
+curl -X POST https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys/revoke \
+  -H "Authorization: Bearer your_jwt_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key_id": "1751308234318",
+    "reason": "Security audit"
+  }'
+```
+
+## Permission System
+
+### Available Permissions
+
+<AccordionGroup>
+  <Accordion icon="eye" title="read">
+    **Grants access to:**
+    - Forecast generation endpoints
+    - Data retrieval operations
+    - Usage statistics viewing
+    
+    **Use cases:**
+    - Read-only applications
+    - Analytics dashboards
+    - Monitoring systems
+  </Accordion>
+  
+  <Accordion icon="pencil" title="write">
+    **Grants access to:**
+    - All read permissions
+    - Data modification operations
+    - Forecast parameter updates
+    
+    **Use cases:**
+    - Production applications
+    - Data processing pipelines
+    - Interactive forecasting tools
+  </Accordion>
+  
+  <Accordion icon="crown" title="admin">
+    **Grants access to:**
+    - All read and write permissions
+    - API key management operations
+    - Account settings modification
+    
+    **Use cases:**
+    - Administrative tools
+    - Key management systems
+    - Account management dashboards
+  </Accordion>
+  
+  <Accordion icon="trash" title="delete">
+    **Grants access to:**
+    - All other permissions
+    - Data deletion operations
+    - Forecast history cleanup
+    
+    **Use cases:**
+    - Data management tools
+    - Cleanup operations
+    - Administrative scripts
+  </Accordion>
+</AccordionGroup>
+
+### Permission Examples
+
+```json
+{
+  "read_only_key": {
+    "permissions": ["read"]
+  },
+  "standard_app": {
+    "permissions": ["read", "write"]
+  },
+  "admin_key": {
+    "permissions": ["read", "write", "admin"]
+  },
+  "full_access": {
+    "permissions": ["read", "write", "admin", "delete"]
+  }
+}
+```
+
+## Usage Monitoring
+
+### Key Metrics
+
+Every API key tracks detailed usage information:
+
+<CardGroup cols={3}>
+  <Card title="Usage Count" icon="calculator">
+    Total number of API requests made with this key
+  </Card>
+  <Card title="Last Used" icon="clock">
+    Timestamp of the most recent API request
+  </Card>
+  <Card title="Status" icon="signal">
+    Current status: active, expired, or revoked
+  </Card>
+</CardGroup>
+
+### Viewing Usage Statistics
+
+```bash
+curl -X GET https://enbfcx4kq6.execute-api.us-east-2.amazonaws.com/keys \
+  -H "Authorization: Bearer your_jwt_token"
+```
+
+**Example Response:**
+```json
+{
+  "keys": [{
+    "id": "1751308234318",
+    "name": "Production API Key",
+    "usage_count": 1847,
+    "last_used": "2024-01-22T15:45:30Z",
+    "status": "active"
+  }]
+}
+```
+
+## Security Best Practices
+
+### Storage and Handling
+
+<Warning>
+**Never expose API keys in client-side code**: API keys should only be used in server-side applications where they can be kept secure.
+</Warning>
+
+<Note>
+**Environment Variables**: Store API keys in environment variables, not in your source code.
+</Note>
+
+```bash
+# ✅ Good: Environment variable
+export NOLANO_API_KEY="ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6"
+
+# ❌ Bad: Hardcoded in source
+api_key = "ak_577aa2f186866ec0c75d1068bcff79cd3da4344b80aec1572e0fa07b364227d6"
+```
+
+### Regular Rotation
+
+Implement a regular key rotation schedule:
+
+1. **Production Keys**: Rotate every 90 days
+2. **Development Keys**: Rotate every 30 days
+3. **Emergency Rotation**: Immediately if compromise suspected
+
+### Access Control
+
+- **Principle of Least Privilege**: Only grant necessary permissions
+- **Separate Keys**: Use different keys for different environments
+- **Team Management**: Individual keys for team members when possible
+
+## Common Use Cases
+
+### Development Workflow
+
+```bash
+# Development environment
+NOLANO_DEV_KEY="ak_dev_key_with_read_write_permissions"
+
+# Staging environment  
+NOLANO_STAGING_KEY="ak_staging_key_with_read_write_permissions"
+
+# Production environment
+NOLANO_PROD_KEY="ak_prod_key_with_minimal_required_permissions"
+```
+
+### Microservices Architecture
+
+```bash
+# Forecasting service (read/write)
+FORECASTING_API_KEY="ak_forecasting_service_key"
+
+# Analytics service (read only)
+ANALYTICS_API_KEY="ak_analytics_service_key"
+
+# Admin panel (admin permissions)
+ADMIN_API_KEY="ak_admin_panel_key"
+```
+
+### CI/CD Integration
+
+```yaml
+# GitHub Actions example
+env:
+  NOLANO_API_KEY: ${{ secrets.NOLANO_API_KEY }}
+
+steps:
+  - name: Test API Integration
+    run: |
+      curl -X POST ${{ env.API_BASE_URL }}/forecast \
+        -H "Authorization: $NOLANO_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d '{"test": "ci_integration"}'
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion icon="exclamation-triangle" title="Key Not Working">
+    **Possible causes:**
+    - Key has expired
+    - Key has been revoked
+    - Insufficient permissions
+    - Incorrect format
+    
+    **Solutions:**
+    - Check key status via GET /keys
+    - Verify permissions match your needs
+    - Ensure proper Authorization header format
+  </Accordion>
+  
+  <Accordion icon="exclamation-triangle" title="Rate Limiting">
+    **Possible causes:**
+    - Too many requests per minute
+    - Burst usage beyond limits
+    - Multiple services using same key
+    
+    **Solutions:**
+    - Implement exponential backoff
+    - Distribute load across multiple keys
+    - Upgrade to higher tier plan
+  </Accordion>
+  
+  <Accordion icon="exclamation-triangle" title="Permission Denied">
+    **Possible causes:**
+    - Key lacks required permissions
+    - Attempting admin operations with basic key
+    - Using expired or revoked key
+    
+    **Solutions:**
+    - Check key permissions
+    - Use appropriate key for operation
+    - Contact support for permission upgrades
+  </Accordion>
+</AccordionGroup>
+
+## Rate Limits by Key Type
+
+| Permission Level | Requests/Min | Requests/Hour | Requests/Day |
+|-----------------|--------------|---------------|--------------|
+| **Read Only** | 50 | 500 | 10,000 |
+| **Read/Write** | 100 | 1,000 | 50,000 |
+| **Admin** | 200 | 2,000 | 100,000 |
+| **Full Access** | 500 | 5,000 | 250,000 |
+
+<Tip>
+**Enterprise Plans**: Custom rate limits and dedicated support available. Contact [support@nolano.com](mailto:support@nolano.com) for details.
+</Tip> 
